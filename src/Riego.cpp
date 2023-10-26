@@ -2,20 +2,23 @@
 #include <DS3231.h>
 #include <Wire.h>
 #include <jled.h>
+#include <OneButton.h>
 
 #include "Water.h"
 #include "WaterState.h"
 #include "ConcreteWaterStates.h"
 
-// myRTC interrupt pin
+// rtc interrupt pin
 #define CLINT 3
 // Water valve relay pin
 #define VALVE_RELAY_PIN 13
 // LED pin
 #define LED_PIN 12
+// Switch pin
+#define SWITCH_PIN 2
 
 // Setup clock
-DS3231 myRTC;
+DS3231 rtc;
 
 // Variables for use in method parameter lists
 byte alarmDay;
@@ -28,13 +31,16 @@ bool alarmH12 = false;
 bool alarmPM = false;
 
 // Watering length in minutes
-byte waterLength = 1;
+byte waterLength = 4;
 
-// LED han
+// LED setup
 auto led = JLed(LED_PIN).LowActive();
 
+// SWitch setup
+OneButton button(SWITCH_PIN, true);
+
 // Initializa Water State Machine
-Water *state = new Water(&led);
+Water *state = new Water(&led, &rtc, waterLength);
 
 // Interrupt signaling byte
 volatile byte alarm1Interrupt = 0;
@@ -55,14 +61,27 @@ void setup()
   Serial.begin(9600);
 
   // Set alarm 1
-  myRTC.turnOffAlarm(1);
-  myRTC.setA1Time(
+  rtc.turnOffAlarm(1);
+  rtc.setA1Time(
       alarmDay, alarmHour, alarmMinute, alarmSecond,
       alarmBits, alarmDayIsDay, alarmH12, alarmPM);
   // enable Alarm 1 interrupts
-  myRTC.turnOnAlarm(1);
+  rtc.turnOnAlarm(1);
   // clear Alarm 1 flag
-  myRTC.checkIfAlarm(1);
+  rtc.checkIfAlarm(1);
+
+  // Link the button functions
+  button.attachClick([]()
+                     {
+    Serial.println("Button click");
+    state->buttonShortPress(); });
+
+  button.attachLongPressStart(
+      []()
+      {
+        Serial.println("Button long press start");
+        state->setState(WaterConfig::getInstance());
+      });
 
   // Attach clock interrupt
   pinMode(CLINT, INPUT_PULLUP);
@@ -77,8 +96,8 @@ void checkTimers()
   // Check if watering timer has expired
   if (state->isWatering())
   {
-    byte currentMinute = myRTC.getMinute();
-    byte endMinute = (alarmMinute + waterLength) % 60;
+    byte currentMinute = rtc.getMinute();
+    byte endMinute = (state->getWaterStartMinute() + waterLength) % 60;
     if (currentMinute == endMinute)
     {
       Serial.println("Watering timer triggered");
@@ -110,7 +129,10 @@ void loop()
 {
   checkAlarms();
   checkTimers();
+  button.tick();
+
   state->execute();
+
   handleValve();
   led.Update();
 }

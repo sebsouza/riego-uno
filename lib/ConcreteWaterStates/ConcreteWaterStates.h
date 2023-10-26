@@ -8,6 +8,10 @@ public:
     void enter(Water *water);
     void execute(Water *water);
     void exit(Water *water);
+
+    void buttonShortPress(Water *water);
+    void buttonLongPress(Water *water);
+
     static WaterState &getInstance();
 
 private:
@@ -21,9 +25,30 @@ public:
     void enter(Water *water);
     void execute(Water *water);
     void exit(Water *water);
+
+    void buttonShortPress(Water *water);
+    void buttonLongPress(Water *water);
+
     static WaterState &getInstance();
 
 private:
     WaterOn() {}
     WaterOn(const WaterOn &other);
+};
+
+class WaterConfig : public WaterState
+{
+public:
+    void enter(Water *water);
+    void execute(Water *water);
+    void exit(Water *water);
+
+    void buttonShortPress(Water *water);
+    void buttonLongPress(Water *water);
+
+    static WaterState &getInstance();
+
+private:
+    WaterConfig() {}
+    WaterConfig(const WaterConfig &other);
 };
