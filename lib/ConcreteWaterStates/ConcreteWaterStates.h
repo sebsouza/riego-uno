@@ -10,6 +10,7 @@ public:
     void exit(Water *water);
 
     void buttonShortPress(Water *water);
+    void buttonDoublePress(Water *water);
     void buttonLongPress(Water *water);
 
     static WaterState &getInstance();
@@ -27,6 +28,7 @@ public:
     void exit(Water *water);
 
     void buttonShortPress(Water *water);
+    void buttonDoublePress(Water *water);
     void buttonLongPress(Water *water);
 
     static WaterState &getInstance();
@@ -44,6 +46,7 @@ public:
     void exit(Water *water);
 
     void buttonShortPress(Water *water);
+    void buttonDoublePress(Water *water);
     void buttonLongPress(Water *water);
 
     static WaterState &getInstance();

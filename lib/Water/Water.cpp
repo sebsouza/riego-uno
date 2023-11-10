@@ -32,17 +32,17 @@ void Water::buttonShortPress()
     currentState->buttonShortPress(this);
 }
 
-void Water::buttonLongPress()
+void Water::buttonDoublePress()
 {
-    currentState->buttonLongPress(this);
+    currentState->buttonDoublePress(this);
 }
-
-// void Water::buttonDoublePress()
-// {
-//     currentState->buttonDoublePress(this);
-// }
 
 // void Water::buttonTriplePress()
 // {
 //     currentState->buttonTriplePress(this);
 // }
+
+void Water::buttonLongPress()
+{
+    currentState->buttonLongPress(this);
+}

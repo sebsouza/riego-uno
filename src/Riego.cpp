@@ -31,10 +31,10 @@ bool alarmH12 = false;
 bool alarmPM = false;
 
 // Watering length in minutes
-byte waterLength = 4;
+byte waterLength = 14;
 
 // LED setup
-auto led = JLed(LED_PIN).LowActive();
+JLed led = JLed(LED_PIN).LowActive();
 
 // SWitch setup
 OneButton button(SWITCH_PIN, true);
@@ -71,16 +71,25 @@ void setup()
   rtc.checkIfAlarm(1);
 
   // Link the button functions
-  button.attachClick([]()
-                     {
-    Serial.println("Button click");
-    state->buttonShortPress(); });
+  button.attachClick(
+      []()
+      {
+        Serial.println("Button click");
+        state->buttonShortPress();
+      });
+
+  button.attachDoubleClick(
+      []()
+      {
+        Serial.println("Button double click");
+        state->buttonDoublePress();
+      });
 
   button.attachLongPressStart(
       []()
       {
         Serial.println("Button long press start");
-        state->setState(WaterConfig::getInstance());
+        state->buttonLongPress();
       });
 
   // Attach clock interrupt

@@ -12,6 +12,7 @@ public:
     virtual void exit(Water *water) = 0;
 
     virtual void buttonShortPress(Water *water) = 0;
+    virtual void buttonDoublePress(Water *water) = 0;
     virtual void buttonLongPress(Water *water) = 0;
 
     virtual ~WaterState() {}

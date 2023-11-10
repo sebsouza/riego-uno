@@ -1,5 +1,29 @@
 #include "ConcreteWaterStates.h"
 
+void blinkWaterLength(Water *water)
+{
+    byte currentWaterLength = water->getWaterLength();
+    byte lengthUnit = currentWaterLength % 10;
+    byte lengthTens = currentWaterLength / 10;
+
+    Serial.print("lengthTens: ");
+    Serial.println(lengthTens);
+    Serial.print("lengthUnit: ");
+    Serial.println(lengthUnit);
+
+    water->useLed()->Off().Update();
+
+    water->useLed()->DelayBefore(500).Blink(300, 100).Repeat(lengthTens);
+    do
+    {
+        water->useLed()->Update();
+    } while (water->useLed()->Update());
+
+    water->useLed()->Blink(100, 100).Repeat(lengthUnit).Update();
+}
+
+// WaterOff implementation
+
 void WaterOff::enter(Water *water)
 {
     water->setWatering(false);
@@ -19,6 +43,14 @@ void WaterOff::buttonShortPress(Water *water)
     water->setState(WaterOn::getInstance());
 }
 
+void WaterOff::buttonDoublePress(Water *water)
+{
+    water->setRainDetected(!water->isRainDetected());
+    Serial.print("Rain detected: ");
+    Serial.println(water->isRainDetected() ? 'true' : 'false');
+    water->useLed()->Blink(100, 100).Repeat(water->isRainDetected() ? 1 : 0);
+}
+
 void WaterOff::buttonLongPress(Water *water)
 {
     water->setState(WaterConfig::getInstance());
@@ -30,11 +62,13 @@ WaterState &WaterOff::getInstance()
     return instance;
 }
 
+// WaterOn implementation
+
 void WaterOn::enter(Water *water)
 {
     water->setWatering(true);
     water->setWaterStartMinute(water->getCurrentMinute());
-    water->useLed()->Blink(1500, 500).Forever();
+    water->useLed()->Blink(1000, 200).Forever();
 }
 
 void WaterOn::execute(Water *water)
@@ -51,6 +85,10 @@ void WaterOn::buttonShortPress(Water *water)
     water->setState(WaterOff::getInstance());
 }
 
+void WaterOn::buttonDoublePress(Water *water)
+{
+}
+
 void WaterOn::buttonLongPress(Water *water)
 {
     water->setState(WaterConfig::getInstance());
@@ -62,13 +100,11 @@ WaterState &WaterOn::getInstance()
     return instance;
 }
 
+// WaterConfig implementation
+
 void WaterConfig::enter(Water *water)
 {
-    byte currentWaterLength = water->getWaterLength();
-    byte lengthUnit = currentWaterLength % 10;
-    byte lengthTens = currentWaterLength / 10;
-
-    water->useLed()->Blink(750, 250).Repeat(lengthTens).Blink(250, 250).Repeat(lengthUnit).DelayAfter(2500).Forever();
+    blinkWaterLength(water);
 }
 
 void WaterConfig::execute(Water *water)
@@ -77,17 +113,23 @@ void WaterConfig::execute(Water *water)
 
 void WaterConfig::exit(Water *water)
 {
-    water->useLed()->On();
 }
 
 void WaterConfig::buttonShortPress(Water *water)
 {
-    water->setState(WaterOff::getInstance());
+    water->setWaterLength(water->getWaterLength() + 1);
+    blinkWaterLength(water);
+}
+
+void WaterConfig::buttonDoublePress(Water *water)
+{
+    water->setWaterLength(water->getWaterLength() - 1);
+    blinkWaterLength(water);
 }
 
 void WaterConfig::buttonLongPress(Water *water)
 {
-    water->setState(WaterOn::getInstance());
+    water->setState(WaterOff::getInstance());
 }
 
 WaterState &WaterConfig::getInstance()
