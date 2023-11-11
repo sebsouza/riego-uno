@@ -20,6 +20,12 @@
 // Setup clock
 DS3231 rtc;
 
+// LED setup
+JLed led = JLed(LED_PIN).LowActive();
+
+// Initializa Water State Machine
+Water *state = new Water(&led, &rtc);
+
 // Variables for use in method parameter lists
 byte alarmDay;
 byte alarmHour = 17;
@@ -30,17 +36,8 @@ bool alarmDayIsDay = false;
 bool alarmH12 = false;
 bool alarmPM = false;
 
-// Watering length in minutes
-byte waterLength = 14;
-
-// LED setup
-JLed led = JLed(LED_PIN).LowActive();
-
 // SWitch setup
 OneButton button(SWITCH_PIN, true);
-
-// Initializa Water State Machine
-Water *state = new Water(&led, &rtc, waterLength);
 
 // Interrupt signaling byte
 volatile byte alarm1Interrupt = 0;
@@ -100,22 +97,7 @@ void setup()
   pinMode(VALVE_RELAY_PIN, OUTPUT);
 }
 
-void checkTimers()
-{
-  // Check if watering timer has expired
-  if (state->isWatering())
-  {
-    byte currentMinute = rtc.getMinute();
-    byte endMinute = (state->getWaterStartMinute() + waterLength) % 60;
-    if (currentMinute == endMinute)
-    {
-      Serial.println("Watering timer triggered");
-      state->setState(Idle::getInstance());
-    }
-  }
-}
-
-void checkAlarms()
+void checkAlarm()
 {
   // Check if alarm 1 has triggered
   if (alarm1Interrupt)
@@ -132,14 +114,29 @@ void handleValve()
   digitalWrite(VALVE_RELAY_PIN, !state->isWatering());
 }
 
+bool stateUpdated = false;
+
+void handleCurrentState()
+{
+  // prevent from triggering twice in the same second
+  if (rtc.getSecond() % 5 == 0 && !stateUpdated)
+  {
+    state->execute();
+    handleValve();
+    stateUpdated = true;
+  }
+  else if (rtc.getSecond() % 5 != 0)
+  {
+    stateUpdated = false;
+  }
+}
+
 void loop()
 {
-  checkAlarms();
-  checkTimers();
+  checkAlarm();
+
   button.tick();
-
-  state->execute();
-
-  handleValve();
   led.Update();
+
+  handleCurrentState();
 }

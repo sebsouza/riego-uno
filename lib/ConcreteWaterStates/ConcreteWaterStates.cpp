@@ -1,4 +1,25 @@
+#include <EEPROM.h>
 #include "ConcreteWaterStates.h"
+
+void blinkTens(JLed *led, byte tens)
+{
+    led->Off().Update();
+    led->DelayBefore(300).Blink(500, 150).Repeat(tens).Update();
+    do
+    {
+        led->Update();
+    } while (led->Update());
+}
+
+void blinkUnits(JLed *led, byte units)
+{
+    led->Off().Update();
+    led->DelayBefore(300).Blink(150, 150).Repeat(units).Update();
+    do
+    {
+        led->Update();
+    } while (led->Update());
+}
 
 void blinkWaterLength(Water *water)
 {
@@ -6,20 +27,50 @@ void blinkWaterLength(Water *water)
     byte lengthUnit = currentWaterLength % 10;
     byte lengthTens = currentWaterLength / 10;
 
-    Serial.print("lengthTens: ");
-    Serial.println(lengthTens);
-    Serial.print("lengthUnit: ");
-    Serial.println(lengthUnit);
+    blinkTens(water->useLed(), lengthTens);
+    blinkUnits(water->useLed(), lengthUnit);
+}
 
-    water->useLed()->Off().Update();
+void blinkRemainingTime(Water *water)
+{
+    byte currentMinute = water->getCurrentMinute();
+    byte waterStartMinute = water->getWaterStartMinute();
+    byte waterLength = water->getWaterLength();
 
-    water->useLed()->DelayBefore(500).Blink(500, 100).Repeat(lengthTens).Update();
-    do
+    byte remainingTime = waterLength - (currentMinute - waterStartMinute);
+
+    byte remainingTimeUnit = remainingTime % 10;
+    byte remainingTimeTens = remainingTime / 10;
+
+    Serial.print("Remaining time: ");
+    Serial.print(remainingTimeTens);
+    Serial.print(remainingTimeUnit);
+    Serial.println();
+
+    blinkTens(water->useLed(), remainingTimeTens);
+    blinkUnits(water->useLed(), remainingTimeUnit);
+    water->useLed()->On().Update();
+}
+
+void checkWateringTime(Water *water)
+{
+    byte currentMinute = water->getCurrentMinute();
+    byte waterStartSecond = water->getWaterStartSecond();
+    byte waterStartMinute = water->getWaterStartMinute();
+    byte waterLength = water->getWaterLength();
+
+    Serial.print("Current minute: ");
+    Serial.println(currentMinute);
+    Serial.print("Water start minute: ");
+    Serial.println(waterStartMinute);
+    Serial.print("Water length: ");
+    Serial.println(waterLength);
+
+    if (currentMinute * 60 - waterStartMinute * 60 - waterStartSecond >= waterLength * 60)
     {
-        water->useLed()->Update();
-    } while (water->useLed()->Update());
-
-    water->useLed()->Blink(200, 100).Repeat(lengthUnit).Update();
+        water->setState(Idle::getInstance());
+        Serial.println("Watering timer triggered");
+    }
 }
 
 // Idle implementation
@@ -65,18 +116,26 @@ WaterState &Idle::getInstance()
 void Watering::enter(Water *water)
 {
     Serial.println("Watering::enter");
-    water->setWatering(true);
-    water->setWaterStartMinute(water->getCurrentMinute());
-    water->useLed()->Blink(1000, 200).Forever();
+    Serial.print("Water length: ");
+    Serial.println(water->getWaterLength());
+
+    if (!water->isWatering())
+    {
+        water->setWatering(true);
+        water->setWaterStartMinute(water->getCurrentMinute());
+    }
+
+    water->useLed()->Blink(1000, 1000).Forever().Update();
 }
 
 void Watering::execute(Water *water)
 {
+    blinkRemainingTime(water);
+    checkWateringTime(water);
 }
 
 void Watering::exit(Water *water)
 {
-    water->setWatering(false);
 }
 
 void Watering::buttonShortPress(Water *water)
@@ -103,16 +162,24 @@ WaterState &Watering::getInstance()
 
 void Settings::enter(Water *water)
 {
-    blinkWaterLength(water);
     Serial.println("Settings::enter");
+    blinkWaterLength(water);
 }
 
 void Settings::execute(Water *water)
 {
+    blinkWaterLength(water);
+
+    if (water->getPreviousState() == &Watering::getInstance())
+    {
+        checkWateringTime(water);
+    }
 }
 
 void Settings::exit(Water *water)
 {
+    EEPROM.put(128, 'S');
+    EEPROM.put(129, water->getWaterLength());
 }
 
 void Settings::buttonShortPress(Water *water)
@@ -129,7 +196,7 @@ void Settings::buttonDoublePress(Water *water)
 
 void Settings::buttonLongPress(Water *water)
 {
-    water->setState(Idle::getInstance());
+    water->setState(*(water->getPreviousState()));
 }
 
 WaterState &Settings::getInstance()
@@ -142,12 +209,12 @@ WaterState &Settings::getInstance()
 
 void RainDetected::enter(Water *water)
 {
-    water->useLed()->Blink(100, 3000).Forever();
     Serial.println("RainDetected::enter");
 }
 
 void RainDetected::execute(Water *water)
 {
+    water->useLed()->Blink(100, 3000).Forever();
 }
 
 void RainDetected::exit(Water *water)
