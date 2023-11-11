@@ -13,13 +13,13 @@ void blinkWaterLength(Water *water)
 
     water->useLed()->Off().Update();
 
-    water->useLed()->DelayBefore(500).Blink(300, 100).Repeat(lengthTens);
+    water->useLed()->DelayBefore(500).Blink(500, 100).Repeat(lengthTens).Update();
     do
     {
         water->useLed()->Update();
     } while (water->useLed()->Update());
 
-    water->useLed()->Blink(100, 100).Repeat(lengthUnit).Update();
+    water->useLed()->Blink(200, 100).Repeat(lengthUnit).Update();
 }
 
 // WaterOff implementation
@@ -28,6 +28,7 @@ void WaterOff::enter(Water *water)
 {
     water->setWatering(false);
     water->useLed()->On();
+    Serial.println("WaterOff::enter");
 }
 
 void WaterOff::execute(Water *water)
@@ -47,8 +48,8 @@ void WaterOff::buttonDoublePress(Water *water)
 {
     water->setRainDetected(!water->isRainDetected());
     Serial.print("Rain detected: ");
-    Serial.println(water->isRainDetected() ? 'true' : 'false');
-    water->useLed()->Blink(100, 100).Repeat(water->isRainDetected() ? 1 : 0);
+    Serial.println(water->isRainDetected());
+    // water->useLed()->Blink(100, 100).Forever();
 }
 
 void WaterOff::buttonLongPress(Water *water)
@@ -105,6 +106,7 @@ WaterState &WaterOn::getInstance()
 void WaterConfig::enter(Water *water)
 {
     blinkWaterLength(water);
+    Serial.println("WaterConfig::enter");
 }
 
 void WaterConfig::execute(Water *water)

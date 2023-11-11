@@ -40,7 +40,6 @@ public:
 
     void buttonShortPress();
     void buttonDoublePress();
-    void buttonTriplePress();
     void buttonLongPress();
 
 private:

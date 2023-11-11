@@ -111,7 +111,6 @@ void checkTimers()
     {
       Serial.println("Watering timer triggered");
       state->setState(WaterOff::getInstance());
-      Serial.println("WaterOff");
     }
   }
 }
@@ -124,7 +123,6 @@ void checkAlarms()
     alarm1Interrupt = 0;
     Serial.println("Alarm 1 triggered");
     state->setState(WaterOn::getInstance());
-    Serial.println("WaterOn");
   }
 }
 

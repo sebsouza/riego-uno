@@ -37,11 +37,6 @@ void Water::buttonDoublePress()
     currentState->buttonDoublePress(this);
 }
 
-// void Water::buttonTriplePress()
-// {
-//     currentState->buttonTriplePress(this);
-// }
-
 void Water::buttonLongPress()
 {
     currentState->buttonLongPress(this);
