@@ -33,9 +33,6 @@ public:
 
     byte getCurrentMinute() const { return rtc->getMinute(); }
 
-    void setRainDetected(bool rainDetected) { this->rainDetected = rainDetected; }
-    bool isRainDetected() const { return rainDetected; }
-
     JLed *useLed() const { return led; }
 
     void buttonShortPress();
@@ -47,7 +44,6 @@ private:
     bool watering;
     byte waterStartMinute;
     byte waterLength; // TODO: Implement this
-    bool rainDetected;
     JLed *led;
     DS3231 *rtc;
 };

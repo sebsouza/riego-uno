@@ -2,7 +2,7 @@
 #include "Water.h"
 #include "WaterState.h"
 
-class WaterOff : public WaterState
+class Idle : public WaterState
 {
 public:
     void enter(Water *water);
@@ -16,11 +16,11 @@ public:
     static WaterState &getInstance();
 
 private:
-    WaterOff() {}
-    WaterOff(const WaterOff &other);
+    Idle() {}
+    Idle(const Idle &other);
 };
 
-class WaterOn : public WaterState
+class Watering : public WaterState
 {
 public:
     void enter(Water *water);
@@ -34,11 +34,11 @@ public:
     static WaterState &getInstance();
 
 private:
-    WaterOn() {}
-    WaterOn(const WaterOn &other);
+    Watering() {}
+    Watering(const Watering &other);
 };
 
-class WaterConfig : public WaterState
+class Settings : public WaterState
 {
 public:
     void enter(Water *water);
@@ -52,6 +52,24 @@ public:
     static WaterState &getInstance();
 
 private:
-    WaterConfig() {}
-    WaterConfig(const WaterConfig &other);
+    Settings() {}
+    Settings(const Settings &other);
+};
+
+class RainDetected : public WaterState
+{
+public:
+    void enter(Water *water);
+    void execute(Water *water);
+    void exit(Water *water);
+
+    void buttonShortPress(Water *water);
+    void buttonDoublePress(Water *water);
+    void buttonLongPress(Water *water);
+
+    static WaterState &getInstance();
+
+private:
+    RainDetected() {}
+    RainDetected(const RainDetected &other);
 };

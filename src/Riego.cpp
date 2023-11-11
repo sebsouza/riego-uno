@@ -110,7 +110,7 @@ void checkTimers()
     if (currentMinute == endMinute)
     {
       Serial.println("Watering timer triggered");
-      state->setState(WaterOff::getInstance());
+      state->setState(Idle::getInstance());
     }
   }
 }
@@ -122,7 +122,7 @@ void checkAlarms()
   {
     alarm1Interrupt = 0;
     Serial.println("Alarm 1 triggered");
-    state->setState(WaterOn::getInstance());
+    state->setState(Watering::getInstance());
   }
 }
 

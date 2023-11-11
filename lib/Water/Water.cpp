@@ -11,7 +11,7 @@ Water::Water(JLed *led, DS3231 *rtc, byte waterLength)
 
     this->waterLength = waterLength;
 
-    currentState = &WaterOff::getInstance();
+    currentState = &Idle::getInstance();
     currentState->enter(this);
 }
 

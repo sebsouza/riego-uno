@@ -22,120 +22,154 @@ void blinkWaterLength(Water *water)
     water->useLed()->Blink(200, 100).Repeat(lengthUnit).Update();
 }
 
-// WaterOff implementation
+// Idle implementation
 
-void WaterOff::enter(Water *water)
+void Idle::enter(Water *water)
 {
     water->setWatering(false);
     water->useLed()->On();
-    Serial.println("WaterOff::enter");
+    Serial.println("Idle::enter");
 }
 
-void WaterOff::execute(Water *water)
+void Idle::execute(Water *water)
 {
 }
 
-void WaterOff::exit(Water *water)
+void Idle::exit(Water *water)
 {
 }
 
-void WaterOff::buttonShortPress(Water *water)
+void Idle::buttonShortPress(Water *water)
 {
-    water->setState(WaterOn::getInstance());
+    water->setState(Watering::getInstance());
 }
 
-void WaterOff::buttonDoublePress(Water *water)
+void Idle::buttonDoublePress(Water *water)
 {
-    water->setRainDetected(!water->isRainDetected());
-    Serial.print("Rain detected: ");
-    Serial.println(water->isRainDetected());
-    // water->useLed()->Blink(100, 100).Forever();
+    water->setState(RainDetected::getInstance());
 }
 
-void WaterOff::buttonLongPress(Water *water)
+void Idle::buttonLongPress(Water *water)
 {
-    water->setState(WaterConfig::getInstance());
+    water->setState(Settings::getInstance());
 }
 
-WaterState &WaterOff::getInstance()
+WaterState &Idle::getInstance()
 {
-    static WaterOff instance;
+    static Idle instance;
     return instance;
 }
 
-// WaterOn implementation
+// Watering implementation
 
-void WaterOn::enter(Water *water)
+void Watering::enter(Water *water)
 {
+    Serial.println("Watering::enter");
     water->setWatering(true);
     water->setWaterStartMinute(water->getCurrentMinute());
     water->useLed()->Blink(1000, 200).Forever();
 }
 
-void WaterOn::execute(Water *water)
+void Watering::execute(Water *water)
 {
 }
 
-void WaterOn::exit(Water *water)
+void Watering::exit(Water *water)
 {
     water->setWatering(false);
 }
 
-void WaterOn::buttonShortPress(Water *water)
+void Watering::buttonShortPress(Water *water)
 {
-    water->setState(WaterOff::getInstance());
+    water->setState(Idle::getInstance());
 }
 
-void WaterOn::buttonDoublePress(Water *water)
+void Watering::buttonDoublePress(Water *water)
 {
 }
 
-void WaterOn::buttonLongPress(Water *water)
+void Watering::buttonLongPress(Water *water)
 {
-    water->setState(WaterConfig::getInstance());
+    water->setState(Settings::getInstance());
 }
 
-WaterState &WaterOn::getInstance()
+WaterState &Watering::getInstance()
 {
-    static WaterOn instance;
+    static Watering instance;
     return instance;
 }
 
-// WaterConfig implementation
+// Settings implementation
 
-void WaterConfig::enter(Water *water)
+void Settings::enter(Water *water)
 {
     blinkWaterLength(water);
-    Serial.println("WaterConfig::enter");
+    Serial.println("Settings::enter");
 }
 
-void WaterConfig::execute(Water *water)
+void Settings::execute(Water *water)
 {
 }
 
-void WaterConfig::exit(Water *water)
+void Settings::exit(Water *water)
 {
 }
 
-void WaterConfig::buttonShortPress(Water *water)
+void Settings::buttonShortPress(Water *water)
 {
     water->setWaterLength(water->getWaterLength() + 1);
     blinkWaterLength(water);
 }
 
-void WaterConfig::buttonDoublePress(Water *water)
+void Settings::buttonDoublePress(Water *water)
 {
     water->setWaterLength(water->getWaterLength() - 1);
     blinkWaterLength(water);
 }
 
-void WaterConfig::buttonLongPress(Water *water)
+void Settings::buttonLongPress(Water *water)
 {
-    water->setState(WaterOff::getInstance());
+    water->setState(Idle::getInstance());
 }
 
-WaterState &WaterConfig::getInstance()
+WaterState &Settings::getInstance()
 {
-    static WaterConfig instance;
+    static Settings instance;
+    return instance;
+}
+
+// RainDetected implementation
+
+void RainDetected::enter(Water *water)
+{
+    water->useLed()->Blink(100, 3000).Forever();
+    Serial.println("RainDetected::enter");
+}
+
+void RainDetected::execute(Water *water)
+{
+}
+
+void RainDetected::exit(Water *water)
+{
+}
+
+void RainDetected::buttonShortPress(Water *water)
+{
+    water->setState(Idle::getInstance());
+}
+
+void RainDetected::buttonDoublePress(Water *water)
+{
+}
+
+void RainDetected::buttonLongPress(Water *water)
+{
+    water->setState(Settings::getInstance());
+}
+
+WaterState &RainDetected::getInstance()
+{
+    static RainDetected instance;
     return instance;
 }
