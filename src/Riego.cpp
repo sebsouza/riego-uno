@@ -23,29 +23,29 @@ DS3231 rtc;
 // LED setup
 JLed led = JLed(LED_PIN).LowActive();
 
+// SWitch setup
+OneButton button(SWITCH_PIN, true);
+
 // Initializa Water State Machine
-Water *state = new Water(&led, &rtc);
+Water *state = new Water(&led, &rtc, &button);
 
 // Variables for use in method parameter lists
 byte alarmDay;
-byte alarmHour = 17;
-byte alarmMinute = 53;
+byte alarmHour = 22;
+byte alarmMinute = 45;
 byte alarmSecond = 0;
 byte alarmBits = 0b00001000; // Alarm 1 every day
 bool alarmDayIsDay = false;
 bool alarmH12 = false;
 bool alarmPM = false;
 
-// SWitch setup
-OneButton button(SWITCH_PIN, true);
-
 // Interrupt signaling byte
 volatile byte alarm1Interrupt = 0;
 
 void isr_Alarm1()
 {
-  // interrupt signals to loop
   alarm1Interrupt = 1;
+
   return;
 }
 
@@ -66,6 +66,18 @@ void setup()
   rtc.turnOnAlarm(1);
   // clear Alarm 1 flag
   rtc.checkIfAlarm(1);
+
+  alarmMinute = 0xFF;     // a value that will never match the time
+  alarmBits = 0b01100000; // Alarm 2 when minutes match, i.e., never
+
+  // Upload the parameters to prevent Alarm 2 entirely
+  rtc.setA2Time(
+      alarmDay, alarmHour, alarmMinute,
+      alarmBits, alarmDayIsDay, alarmH12, alarmPM);
+  // disable Alarm 2 interrupt
+  rtc.turnOffAlarm(2);
+  // clear Alarm 2 flag
+  rtc.checkIfAlarm(2);
 
   // Link the button functions
   button.attachClick(
@@ -97,46 +109,27 @@ void setup()
   pinMode(VALVE_RELAY_PIN, OUTPUT);
 }
 
-void checkAlarm()
-{
-  // Check if alarm 1 has triggered
-  if (alarm1Interrupt)
-  {
-    alarm1Interrupt = 0;
-    Serial.println("Alarm 1 triggered");
-    state->setState(Watering::getInstance());
-  }
-}
-
 void handleValve()
 {
   // Set valve relay active low when watering
   digitalWrite(VALVE_RELAY_PIN, !state->isWatering());
 }
 
-bool stateUpdated = false;
-
-void handleCurrentState()
+void checkAlarms()
 {
-  // prevent from triggering twice in the same second
-  if (rtc.getSecond() % 5 == 0 && !stateUpdated)
+  rtc.checkIfAlarm(1);
+  if (alarm1Interrupt)
   {
-    state->execute();
-    handleValve();
-    stateUpdated = true;
-  }
-  else if (rtc.getSecond() % 5 != 0)
-  {
-    stateUpdated = false;
+    alarm1Interrupt = 0;
+    Serial.println("Alarm 1 interrupt");
+    state->alarm1Interrupt();
   }
 }
 
 void loop()
 {
-  checkAlarm();
+  checkAlarms();
+  state->execute();
 
-  button.tick();
-  led.Update();
-
-  handleCurrentState();
+  handleValve();
 }

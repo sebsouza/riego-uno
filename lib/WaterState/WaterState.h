@@ -15,5 +15,7 @@ public:
     virtual void buttonDoublePress(Water *water) = 0;
     virtual void buttonLongPress(Water *water) = 0;
 
+    virtual void alarm1Interrupt(Water *water) = 0;
+
     virtual ~WaterState() {}
 };

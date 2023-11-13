@@ -5,10 +5,13 @@
 #include "Water.h"
 #include "ConcreteWaterStates.h"
 
-Water::Water(JLed *led, DS3231 *rtc)
+#define REFRESH_TIME_SECONDS 6
+
+Water::Water(JLed *led, DS3231 *rtc, OneButton *button)
 {
     this->led = led;
     this->rtc = rtc;
+    this->button = button;
 
     this->watering = false;
 
@@ -41,7 +44,27 @@ void Water::setState(WaterState &newState)
 
 void Water::execute()
 {
-    currentState->execute(this);
+    if ((this->rtc->getSecond() % REFRESH_TIME_SECONDS == 0) && (!this->stateUpdated))
+    {
+        this->stateUpdated = true;
+        currentState->execute(this);
+
+        bool h12Flag;
+        bool pmFlag;
+
+        Serial.print("Current Time: ");
+        Serial.print(this->rtc->getHour(h12Flag, pmFlag));
+        Serial.print(":");
+        Serial.print(this->rtc->getMinute());
+        Serial.print(":");
+        Serial.println(this->rtc->getSecond());
+    }
+    else if ((this->rtc->getSecond() % REFRESH_TIME_SECONDS != 0) && (this->stateUpdated))
+    {
+        this->stateUpdated = false;
+    }
+    this->led->Update();
+    this->button->tick();
 }
 
 void Water::buttonShortPress()
@@ -57,4 +80,9 @@ void Water::buttonDoublePress()
 void Water::buttonLongPress()
 {
     currentState->buttonLongPress(this);
+}
+
+void Water::alarm1Interrupt()
+{
+    currentState->alarm1Interrupt(this);
 }

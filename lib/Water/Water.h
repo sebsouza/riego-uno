@@ -2,6 +2,7 @@
 #include "WaterState.h"
 #include <jled.h>
 #include <DS3231.h>
+#include <OneButton.h>
 
 class WaterState;
 
@@ -9,9 +10,10 @@ class WaterState;
 class Water
 {
 public:
-    Water(JLed *led, DS3231 *rtc);
+    Water(JLed *led, DS3231 *rtc, OneButton *button);
     inline WaterState *getCurrentState() const { return currentState; }
     inline WaterState *getPreviousState() const { return previousState; }
+
     void execute();
 
     void setState(WaterState &newState);
@@ -30,20 +32,33 @@ public:
 
     byte getCurrentMinute() const { return rtc->getMinute(); }
     byte getCurrentSecond() const { return rtc->getSecond(); }
+    float getCurrentTemperature() const { return rtc->getTemperature(); }
 
     JLed *useLed() const { return led; }
+    OneButton *useButton() const { return button; }
 
     void buttonShortPress();
     void buttonDoublePress();
     void buttonLongPress();
 
+    void alarm1Interrupt();
+
+    void setStateUpdated(bool stateUpdated) { this->stateUpdated = stateUpdated; }
+    bool isStateUpdated() const { return stateUpdated; }
+
 private:
     WaterState *currentState;
     WaterState *previousState;
+
     bool watering;
+
     byte waterStartMinute;
     byte waterStartSecond;
-    byte waterLength; // TODO: Implement this
+    byte waterLength;
+
     JLed *led;
     DS3231 *rtc;
+    OneButton *button;
+
+    bool stateUpdated;
 };

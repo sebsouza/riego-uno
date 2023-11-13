@@ -13,6 +13,8 @@ public:
     void buttonDoublePress(Water *water);
     void buttonLongPress(Water *water);
 
+    void alarm1Interrupt(Water *water);
+
     static WaterState &getInstance();
 
 private:
@@ -30,6 +32,8 @@ public:
     void buttonShortPress(Water *water);
     void buttonDoublePress(Water *water);
     void buttonLongPress(Water *water);
+
+    void alarm1Interrupt(Water *water);
 
     static WaterState &getInstance();
 
@@ -49,6 +53,8 @@ public:
     void buttonDoublePress(Water *water);
     void buttonLongPress(Water *water);
 
+    void alarm1Interrupt(Water *water);
+
     static WaterState &getInstance();
 
 private:
@@ -66,6 +72,8 @@ public:
     void buttonShortPress(Water *water);
     void buttonDoublePress(Water *water);
     void buttonLongPress(Water *water);
+
+    void alarm1Interrupt(Water *water);
 
     static WaterState &getInstance();
 
