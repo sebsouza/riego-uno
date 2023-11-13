@@ -31,8 +31,8 @@ Water *state = new Water(&led, &rtc, &button);
 
 // Variables for use in method parameter lists
 byte alarmDay;
-byte alarmHour = 22;
-byte alarmMinute = 45;
+byte alarmHour = 6;
+byte alarmMinute = 0;
 byte alarmSecond = 0;
 byte alarmBits = 0b00001000; // Alarm 1 every day
 bool alarmDayIsDay = false;
