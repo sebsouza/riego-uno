@@ -29,22 +29,31 @@ OneButton button(SWITCH_PIN, true);
 // Initializa Water State Machine
 Water *state = new Water(&led, &rtc, &button);
 
-// Variables for use in method parameter lists
-byte alarmDay;
-byte alarmHour = 22;
-byte alarmMinute = 45;
-byte alarmSecond = 0;
-byte alarmBits = 0b00001000; // Alarm 1 every day
-bool alarmDayIsDay = false;
-bool alarmH12 = false;
-bool alarmPM = false;
+// Alarm 1 setup
+byte alarm1Day;
+byte alarm1Hour = 23;
+byte alarm1Minute = 30;
+byte alarm1Second = 0;
+byte alarm1Bits = 0b00001000; // Alarm 1 every day
+bool alarm1DayIsDay = false;
+bool alarm1H12 = false;
+bool alarm1PM = false;
+
+// Alarm 2 setup1
+byte alarm2Day;
+byte alarm2Hour = 23;
+byte alarm2Minute = 35;
+byte alarm2Bits = 0b01000000; // Alarm 2 every day
+bool alarm2DayIsDay = false;
+bool alarm2H12 = false;
+bool alarm2PM = false;
 
 // Interrupt signaling byte
-volatile byte alarm1Interrupt = 0;
+volatile byte alarmInterrupt = 0;
 
-void isr_Alarm1()
+void isr_Alarm()
 {
-  alarm1Interrupt = 1;
+  alarmInterrupt = 1;
 
   return;
 }
@@ -60,22 +69,20 @@ void setup()
   // Set alarm 1
   rtc.turnOffAlarm(1);
   rtc.setA1Time(
-      alarmDay, alarmHour, alarmMinute, alarmSecond,
-      alarmBits, alarmDayIsDay, alarmH12, alarmPM);
+      alarm1Day, alarm1Hour, alarm1Minute, alarm1Second,
+      alarm1Bits, alarm1DayIsDay, alarm1H12, alarm1PM);
   // enable Alarm 1 interrupts
   rtc.turnOnAlarm(1);
   // clear Alarm 1 flag
   rtc.checkIfAlarm(1);
 
-  alarmMinute = 0xFF;     // a value that will never match the time
-  alarmBits = 0b01100000; // Alarm 2 when minutes match, i.e., never
-
-  // Upload the parameters to prevent Alarm 2 entirely
-  rtc.setA2Time(
-      alarmDay, alarmHour, alarmMinute,
-      alarmBits, alarmDayIsDay, alarmH12, alarmPM);
-  // disable Alarm 2 interrupt
+  // Set alarm 2
   rtc.turnOffAlarm(2);
+  rtc.setA2Time(
+      alarm2Day, alarm2Hour, alarm2Minute,
+      alarm2Bits, alarm2DayIsDay, alarm2H12, alarm2PM);
+  // enable Alarm 2 interrupts
+  rtc.turnOnAlarm(2);
   // clear Alarm 2 flag
   rtc.checkIfAlarm(2);
 
@@ -103,7 +110,7 @@ void setup()
 
   // Attach clock interrupt
   pinMode(CLINT, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(CLINT), isr_Alarm1, FALLING);
+  attachInterrupt(digitalPinToInterrupt(CLINT), isr_Alarm, FALLING);
 
   // Define relay pin
   pinMode(VALVE_RELAY_PIN, OUTPUT);
@@ -117,12 +124,19 @@ void handleValve()
 
 void checkAlarms()
 {
-  rtc.checkIfAlarm(1);
-  if (alarm1Interrupt)
+  if (alarmInterrupt)
   {
-    alarm1Interrupt = 0;
-    Serial.println("Alarm 1 interrupt");
-    state->alarm1Interrupt();
+    alarmInterrupt = 0;
+    if (rtc.checkIfAlarm(1))
+    {
+      Serial.println("Alarm 1 interrupt");
+      state->alarm1Interrupt();
+    }
+    if (rtc.checkIfAlarm(2))
+    {
+      Serial.println("Alarm 2 interrupt");
+      state->alarm2Interrupt();
+    }
   }
 }
 

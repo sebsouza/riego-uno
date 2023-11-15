@@ -17,6 +17,7 @@ public:
     void execute();
 
     void setState(WaterState &newState);
+    void setPreviousState(WaterState &previousState) { this->previousState = &previousState; }
 
     void setWatering(bool watering) { this->watering = watering; }
     bool isWatering() const { return watering; }
@@ -34,6 +35,9 @@ public:
     byte getCurrentSecond() const { return rtc->getSecond(); }
     float getCurrentTemperature() const { return rtc->getTemperature(); }
 
+    void setTemperatureThreshold(byte temperatureThreslhold) { this->temperatureThreslhold = temperatureThreslhold; }
+    byte getTemperatureThreshold() const { return temperatureThreslhold; }
+
     JLed *useLed() const { return led; }
     OneButton *useButton() const { return button; }
 
@@ -42,6 +46,7 @@ public:
     void buttonLongPress();
 
     void alarm1Interrupt();
+    void alarm2Interrupt();
 
     void setStateUpdated(bool stateUpdated) { this->stateUpdated = stateUpdated; }
     bool isStateUpdated() const { return stateUpdated; }
@@ -55,6 +60,7 @@ private:
     byte waterStartMinute;
     byte waterStartSecond;
     byte waterLength;
+    byte temperatureThreslhold;
 
     JLed *led;
     DS3231 *rtc;
