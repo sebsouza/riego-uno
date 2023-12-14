@@ -1,6 +1,7 @@
 #include <EEPROM.h>
 #include "ConcreteWaterStates.h"
 #include "services.cpp"
+#include "services.h"
 
 // Idle implementation
 
@@ -25,17 +26,21 @@ void Idle::exit(Water *water)
 void Idle::buttonShortPress(Water *water)
 {
     water->setState(Watering::getInstance());
+
     Serial.println("Button short press");
+    water->useBuzzer()->playWateringMelody();
 }
 
 void Idle::buttonDoublePress(Water *water)
 {
     water->setState(RainDetected::getInstance());
+    water->useBuzzer()->beep(2);
 }
 
 void Idle::buttonLongPress(Water *water)
 {
     water->setState(LengthSetup::getInstance());
+    water->useBuzzer()->longBeep();
 }
 
 void Idle::alarm1Interrupt(Water *water)
@@ -99,6 +104,7 @@ void Watering::buttonDoublePress(Water *water)
 void Watering::buttonLongPress(Water *water)
 {
     water->setState(LengthSetup::getInstance());
+    water->useBuzzer()->longBeep();
 }
 
 void Watering::alarm1Interrupt(Water *water)
@@ -145,6 +151,7 @@ void RainDetected::buttonDoublePress(Water *water)
 void RainDetected::buttonLongPress(Water *water)
 {
     water->setState(LengthSetup::getInstance());
+    water->useBuzzer()->longBeep();
 }
 
 void RainDetected::alarm1Interrupt(Water *water)
@@ -183,23 +190,25 @@ void LengthSetup::execute(Water *water)
 
 void LengthSetup::exit(Water *water)
 {
-    EEPROM.put(128, 'S');
     EEPROM.put(129, water->getWaterLength());
 }
 
 void LengthSetup::buttonShortPress(Water *water)
 {
     water->setWaterLength(water->getWaterLength() + 1);
+    water->useBuzzer()->beep();
 }
 
 void LengthSetup::buttonDoublePress(Water *water)
 {
     water->setWaterLength(water->getWaterLength() - 1);
+    water->useBuzzer()->beep();
 }
 
 void LengthSetup::buttonLongPress(Water *water)
 {
     water->setState(TemperatureSetup::getInstance());
+    water->useBuzzer()->longBeep();
 }
 
 void LengthSetup::alarm1Interrupt(Water *water)
@@ -243,22 +252,27 @@ void TemperatureSetup::execute(Water *water)
 void TemperatureSetup::exit(Water *water)
 {
     EEPROM.put(130, water->getTemperatureThreshold());
+
+    Serial.print("Temperature threshold Saved: ");
+    Serial.println(water->getTemperatureThreshold());
 }
 
 void TemperatureSetup::buttonShortPress(Water *water)
 {
     water->setTemperatureThreshold(water->getTemperatureThreshold() + 1);
+    water->useBuzzer()->beep();
 }
 
 void TemperatureSetup::buttonDoublePress(Water *water)
 {
     water->setTemperatureThreshold(water->getTemperatureThreshold() - 1);
+    water->useBuzzer()->beep();
 }
 
 void TemperatureSetup::buttonLongPress(Water *water)
 {
-    WaterState *previousState = water->getPreviousState();
-    water->setState(*previousState);
+    water->setState(AlarmSetup::getInstance());
+    water->useBuzzer()->longBeep();
 }
 
 void TemperatureSetup::alarm1Interrupt(Water *water)
@@ -277,5 +291,85 @@ void TemperatureSetup::alarm2Interrupt(Water *water)
 WaterState &TemperatureSetup::getInstance()
 {
     static TemperatureSetup instance;
+    return instance;
+}
+
+// Alarm Setup implementation
+
+void AlarmSetup::enter(Water *water)
+{
+    water->useLed()->Off().Update();
+
+    Serial.println("AlarmSetup::enter");
+}
+
+void AlarmSetup::execute(Water *water)
+{
+    blinkAlarm(water);
+
+    if (water->isWatering())
+    {
+        checkWateringTime(water);
+    }
+}
+
+void AlarmSetup::exit(Water *water)
+{
+    byte A1Day;
+    byte A1Hour;
+    byte A1Minute;
+    byte A1Second;
+    byte AlarmBits;
+    bool A1Dy;
+    bool A1h12;
+    bool A1PM;
+
+    // Update alarm time
+    water->useRtc()->getA1Time(A1Day, A1Hour, A1Minute, A1Second, AlarmBits, A1Dy, A1h12, A1PM);
+    A1Hour = alarmTime[water->getAlarmTime()];
+    water->useRtc()->setA1Time(A1Day, A1Hour, A1Minute, A1Second, AlarmBits, A1Dy, A1h12, A1PM);
+
+    EEPROM.put(131, water->getAlarmTime());
+    EEPROM.put(128, 'S');
+
+    Serial.print("Alarm time Saved: ");
+    Serial.println(water->getAlarmTime());
+}
+
+void AlarmSetup::buttonShortPress(Water *water)
+{
+    water->setAlarmTime((water->getAlarmTime() + 1) % 4);
+    water->useBuzzer()->beep();
+}
+
+void AlarmSetup::buttonDoublePress(Water *water)
+{
+    water->setAlarmTime((water->getAlarmTime() - 1) % 4);
+    water->useBuzzer()->beep();
+}
+
+void AlarmSetup::buttonLongPress(Water *water)
+{
+    WaterState *previousState = water->getPreviousState();
+    water->setState(*previousState);
+    water->useBuzzer()->beep(3);
+}
+
+void AlarmSetup::alarm1Interrupt(Water *water)
+{
+    handleSetupAlarmInterrupt(water);
+}
+
+void AlarmSetup::alarm2Interrupt(Water *water)
+{
+    if (isHot(water))
+    {
+        handleSetupAlarmInterrupt(water);
+    }
+}
+
+WaterState &AlarmSetup::getInstance()
+{
+    static AlarmSetup instance;
     return instance;
 }

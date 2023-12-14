@@ -4,52 +4,17 @@
 #include <jled.h>
 #include <OneButton.h>
 
+#include "Riego.h"
 #include "Water.h"
 #include "WaterState.h"
 #include "ConcreteWaterStates.h"
 
-// rtc interrupt pin
-#define CLINT 3
-// Water valve relay pin
-#define VALVE_RELAY_PIN 13
-// LED pin
-#define LED_PIN 12
-// Switch pin
-#define SWITCH_PIN 2
-
-// Setup clock
 DS3231 rtc;
-
-// LED setup
 JLed led = JLed(LED_PIN).LowActive();
-
-// SWitch setup
 OneButton button(SWITCH_PIN, true);
+Buzzer buzzer(BUZZER_PIN);
 
-// Initializa Water State Machine
-Water *state = new Water(&led, &rtc, &button);
-
-// Alarm 1 setup
-byte alarm1Day;
-byte alarm1Hour = 23;
-byte alarm1Minute = 30;
-byte alarm1Second = 0;
-byte alarm1Bits = 0b00001000; // Alarm 1 every day
-bool alarm1DayIsDay = false;
-bool alarm1H12 = false;
-bool alarm1PM = false;
-
-// Alarm 2 setup1
-byte alarm2Day;
-byte alarm2Hour = 23;
-byte alarm2Minute = 35;
-byte alarm2Bits = 0b01000000; // Alarm 2 every day
-bool alarm2DayIsDay = false;
-bool alarm2H12 = false;
-bool alarm2PM = false;
-
-// Interrupt signaling byte
-volatile byte alarmInterrupt = 0;
+Water *state = new Water(&led, &rtc, &button, &buzzer);
 
 void isr_Alarm()
 {
@@ -108,12 +73,9 @@ void setup()
         state->buttonLongPress();
       });
 
-  // Attach clock interrupt
+  pinMode(VALVE_RELAY_PIN, OUTPUT);
   pinMode(CLINT, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(CLINT), isr_Alarm, FALLING);
-
-  // Define relay pin
-  pinMode(VALVE_RELAY_PIN, OUTPUT);
 }
 
 void handleValve()

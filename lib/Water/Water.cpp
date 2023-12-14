@@ -1,35 +1,39 @@
 #include <jled.h>
 #include <DS3231.h>
 #include <EEPROM.h>
+#include "Buzzer.h"
 
 #include "Water.h"
 #include "ConcreteWaterStates.h"
 
 #define REFRESH_TIME_SECONDS 6
 
-Water::Water(JLed *led, DS3231 *rtc, OneButton *button)
+Water::Water(JLed *led, DS3231 *rtc, OneButton *button, Buzzer *buzzer)
 {
     this->led = led;
     this->rtc = rtc;
     this->button = button;
+    this->buzzer = buzzer;
 
     this->watering = false;
 
     // Read EEPROM Settings if exists
     if (EEPROM.read(128) == 'S')
-    { // Read water length from EEPROM
+    { // Read from EEPROM
         EEPROM.get(129, waterLength);
         EEPROM.get(130, temperatureThreslhold);
-        temperatureThreslhold = 35;
+        EEPROM.get(131, alarmTime);
     }
     else
-    { // Set default water length
+    { // Set default parameters
         waterLength = 10;
         temperatureThreslhold = 35;
+        alarmTime = 0;
 
         EEPROM.put(128, 'S');
         EEPROM.put(129, waterLength);
         EEPROM.put(130, temperatureThreslhold);
+        EEPROM.put(131, alarmTime);
     }
 
     this->waterLength = waterLength;

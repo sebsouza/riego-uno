@@ -44,6 +44,27 @@ private:
     Watering(const Watering &other);
 };
 
+class RainDetected : public WaterState
+{
+public:
+    void enter(Water *water);
+    void execute(Water *water);
+    void exit(Water *water);
+
+    void buttonShortPress(Water *water);
+    void buttonDoublePress(Water *water);
+    void buttonLongPress(Water *water);
+
+    void alarm1Interrupt(Water *water);
+    void alarm2Interrupt(Water *water);
+
+    static WaterState &getInstance();
+
+private:
+    RainDetected() {}
+    RainDetected(const RainDetected &other);
+};
+
 class LengthSetup : public WaterState
 {
 public:
@@ -86,7 +107,7 @@ private:
     TemperatureSetup(const TemperatureSetup &other);
 };
 
-class RainDetected : public WaterState
+class AlarmSetup : public WaterState
 {
 public:
     void enter(Water *water);
@@ -103,6 +124,6 @@ public:
     static WaterState &getInstance();
 
 private:
-    RainDetected() {}
-    RainDetected(const RainDetected &other);
+    AlarmSetup() {}
+    AlarmSetup(const AlarmSetup &other);
 };

@@ -103,6 +103,13 @@ void blinkTemperatureThreshold(Water *water)
     blinkUnits(water, temperatureUnit);
 }
 
+void blinkAlarm(Water *water)
+{
+    byte alarmTime = water->getAlarmTime();
+
+    blinkUnits(water, alarmTime + 1);
+}
+
 bool isHot(Water *water)
 {
     float currentTemperature = water->getCurrentTemperature();
@@ -133,3 +140,39 @@ void handleSetupAlarmInterrupt(Water *water)
     {
     }
 }
+
+// void playSetupMelody(Water *water)
+// {
+//     int melody[] = {
+//         NOTE_C5, NOTE_D5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_A5, NOTE_B5, NOTE_C6};
+
+//     int noteDurations[] = {
+//         16, 16, 16, 16, 16, 16, 16, 16};
+
+//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
+// }
+
+// void hiTone(Water *water)
+// {
+//     int melody[] = {
+//         NOTE_C5, NOTE_D5, NOTE_E5};
+
+//     int noteDurations[] = {
+//         16,
+//         16,
+//         16,
+//     };
+
+//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
+// }
+
+// void lowTone(Water *water)
+// {
+//     int melody[] = {
+//         NOTE_C4};
+
+//     int noteDurations[] = {
+//         8};
+
+//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
+// }

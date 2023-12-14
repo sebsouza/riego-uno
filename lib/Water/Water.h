@@ -3,6 +3,7 @@
 #include <jled.h>
 #include <DS3231.h>
 #include <OneButton.h>
+#include "Buzzer.h"
 
 class WaterState;
 
@@ -10,7 +11,7 @@ class WaterState;
 class Water
 {
 public:
-    Water(JLed *led, DS3231 *rtc, OneButton *button);
+    Water(JLed *led, DS3231 *rtc, OneButton *button, Buzzer *buzzer);
     inline WaterState *getCurrentState() const { return currentState; }
     inline WaterState *getPreviousState() const { return previousState; }
 
@@ -38,8 +39,13 @@ public:
     void setTemperatureThreshold(byte temperatureThreslhold) { this->temperatureThreslhold = temperatureThreslhold; }
     byte getTemperatureThreshold() const { return temperatureThreslhold; }
 
+    void setAlarmTime(byte alarmTime) { this->alarmTime = alarmTime; }
+    byte getAlarmTime() const { return alarmTime; }
+
     JLed *useLed() const { return led; }
     OneButton *useButton() const { return button; }
+    Buzzer *useBuzzer() const { return buzzer; }
+    DS3231 *useRtc() const { return rtc; }
 
     void buttonShortPress();
     void buttonDoublePress();
@@ -61,10 +67,12 @@ private:
     byte waterStartSecond;
     byte waterLength;
     byte temperatureThreslhold;
+    byte alarmTime; // 0: 6, 1: 12, 2: 18, 3: 0
 
     JLed *led;
     DS3231 *rtc;
     OneButton *button;
+    Buzzer *buzzer;
 
     bool stateUpdated;
 };
