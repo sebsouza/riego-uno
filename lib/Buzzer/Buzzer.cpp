@@ -2,7 +2,6 @@
 #include "Buzzer.h"
 
 #define BEEP_NOTE NOTE_C5
-#define NOTE_LENGTH 1000
 
 void Buzzer::setup()
 {
@@ -41,11 +40,13 @@ void Buzzer::beep(byte times, unsigned int delayTime, unsigned int beepTime)
     }
 }
 
-void Buzzer::playMelody(int *melody, int *noteDurations, int length)
+void Buzzer::playMelody(int *melody, int *noteDurations, int noteCount, int bpm)
 {
-    for (int thisNote = 0; thisNote < length; thisNote++)
+    int noteLength = 60000 / bpm * 4;
+
+    for (int thisNote = 0; thisNote < noteCount; thisNote++)
     {
-        int noteDuration = NOTE_LENGTH / noteDurations[thisNote];
+        int noteDuration = noteLength / noteDurations[thisNote];
         tone(pin, melody[thisNote], noteDuration);
         int pauseBetweenNotes = noteDuration * 1.30;
         delay(pauseBetweenNotes);
@@ -53,7 +54,7 @@ void Buzzer::playMelody(int *melody, int *noteDurations, int length)
     }
 }
 
-void Buzzer::playWateringMelody()
+void Buzzer::playXmasMelody()
 {
     int melody[] = {
         NOTE_E5, NOTE_E5, NOTE_E5,
@@ -75,48 +76,53 @@ void Buzzer::playWateringMelody()
         8, 8, 8, 8,
         4, 4};
 
-    playMelody(melody, noteDurations, 26);
+    playMelody(melody, noteDurations, 26, 150);
 }
 
-void Buzzer::playIdleMelody()
+void Buzzer::playGodfatherMelody()
 {
+    // The Godfather theme
+    // Score available at https://musescore.com/user/35463/scores/55160
     int melody[] = {
 
-        // The Godfather theme
-        // Score available at https://musescore.com/user/35463/scores/55160
+        REST, REST, REST, REST, NOTE_E4, NOTE_A4, NOTE_C5,
+        NOTE_B4, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_B4, NOTE_A4, NOTE_F4, NOTE_G4,
+        NOTE_E4, NOTE_E4, NOTE_A4, NOTE_C5,
+        NOTE_B4, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_C5, NOTE_A4, NOTE_E4, NOTE_DS4,
 
-        REST, 4, REST, 8, REST, 8, REST, 8, NOTE_E4, 8, NOTE_A4, 8, NOTE_C5, 8, // 1
-        NOTE_B4, 8, NOTE_A4, 8, NOTE_C5, 8, NOTE_A4, 8, NOTE_B4, 8, NOTE_A4, 8, NOTE_F4, 8, NOTE_G4, 8,
-        NOTE_E4, 2, NOTE_E4, 8, NOTE_A4, 8, NOTE_C5, 8,
-        NOTE_B4, 8, NOTE_A4, 8, NOTE_C5, 8, NOTE_A4, 8, NOTE_C5, 8, NOTE_A4, 8, NOTE_E4, 8, NOTE_DS4, 8,
+        NOTE_D4, NOTE_D4, NOTE_F4, NOTE_GS4,
+        NOTE_B4, NOTE_D4, NOTE_F4, NOTE_GS4,
+        NOTE_A4, NOTE_C4, NOTE_C4, NOTE_G4,
+        NOTE_F4, NOTE_E4, NOTE_G4, NOTE_F4, NOTE_F4, NOTE_E4, NOTE_E4, NOTE_GS4,
 
-        NOTE_D4, 2, NOTE_D4, 8, NOTE_F4, 8, NOTE_GS4, 8, // 5
-        NOTE_B4, 2, NOTE_D4, 8, NOTE_F4, 8, NOTE_GS4, 8,
-        NOTE_A4, 2, NOTE_C4, 8, NOTE_C4, 8, NOTE_G4, 8,
-        NOTE_F4, 8, NOTE_E4, 8, NOTE_G4, 8, NOTE_F4, 8, NOTE_F4, 8, NOTE_E4, 8, NOTE_E4, 8, NOTE_GS4, 8,
+        NOTE_A4, REST, NOTE_A4, NOTE_A4, NOTE_GS4,
+        NOTE_G4, NOTE_B4, NOTE_A4, NOTE_F4,
+        NOTE_E4, NOTE_E4, NOTE_G4, NOTE_E4,
+        NOTE_D4, NOTE_D4, NOTE_D4, NOTE_F4, NOTE_DS4,
 
-        NOTE_A4, 2, REST, 8, NOTE_A4, 8, NOTE_A4, 8, NOTE_GS4, 8, // 9
-        NOTE_G4, 2, NOTE_B4, 8, NOTE_A4, 8, NOTE_F4, 8,
-        NOTE_E4, 2, NOTE_E4, 8, NOTE_G4, 8, NOTE_E4, 8,
-        NOTE_D4, 2, NOTE_D4, 8, NOTE_D4, 8, NOTE_F4, 8, NOTE_DS4, 8,
+        NOTE_E4, REST, NOTE_E4, NOTE_A4, NOTE_C5, // 13
 
-        NOTE_E4, 2, REST, 8, NOTE_E4, 8, NOTE_A4, 8, NOTE_C5, 8, // 13
-
-        // repeats from 2
-        NOTE_B4, 8, NOTE_A4, 8, NOTE_C5, 8, NOTE_A4, 8, NOTE_B4, 8, NOTE_A4, 8, NOTE_F4, 8, NOTE_G4, 8, // 2
-        NOTE_E4, 2, NOTE_E4, 8, NOTE_A4, 8, NOTE_C5, 8,
-        NOTE_B4, 8, NOTE_A4, 8, NOTE_C5, 8, NOTE_A4, 8, NOTE_C5, 8, NOTE_A4, 8, NOTE_E4, 8, NOTE_DS4, 8,
-
-        NOTE_D4, 2, NOTE_D4, 8, NOTE_F4, 8, NOTE_GS4, 8, // 5
-        NOTE_B4, 2, NOTE_D4, 8, NOTE_F4, 8, NOTE_GS4, 8,
-        NOTE_A4, 2, NOTE_C4, 8, NOTE_C4, 8, NOTE_G4, 8,
-        NOTE_F4, 8, NOTE_E4, 8, NOTE_G4, 8, NOTE_F4, 8, NOTE_F4, 8, NOTE_E4, 8, NOTE_E4, 8, NOTE_GS4, 8,
-
-        NOTE_A4, 2, REST, 8, NOTE_A4, 8, NOTE_A4, 8, NOTE_GS4, 8, // 9
-        NOTE_G4, 2, NOTE_B4, 8, NOTE_A4, 8, NOTE_F4, 8,
-        NOTE_E4, 2, NOTE_E4, 8, NOTE_G4, 8, NOTE_E4, 8,
-        NOTE_D4, 2, NOTE_D4, 8, NOTE_D4, 8, NOTE_F4, 8, NOTE_DS4, 8,
-
-        NOTE_E4, 2 // 13
     };
+
+    int noteDurations[] = {
+
+        4, 8, 8, 8, 8, 8, 8,
+        8, 8, 8, 8, 8, 8, 8, 8,
+        2, 8, 8, 8,
+        8, 8, 8, 8, 8, 8, 8, 8,
+
+        2, 8, 8, 8,
+        2, 8, 8, 8,
+        2, 8, 8, 8,
+        8, 8, 8, 8, 8, 8, 8, 8,
+
+        2, 8, 8, 8, 8,
+        2, 8, 8, 8,
+        2, 8, 8, 8,
+        2, 8, 8, 8, 8,
+
+        2, 8, 8, 8, 8, // 13
+    };
+
+    playMelody(melody, noteDurations, 48, 90);
 }
