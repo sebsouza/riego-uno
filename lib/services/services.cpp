@@ -3,7 +3,7 @@
 
 #define LED_BLINK_TIME_ON_SHORT 100
 #define LED_BLINK_TIME_ON_LONG 400
-#define LED_BLINK_TIME_OFF 150
+#define LED_BLINK_TIME_OFF 100
 
 void wait(Water *water)
 {
@@ -27,9 +27,10 @@ void blinkTens(Water *water, byte tens)
     if (tens > 0)
     {
         waitOff(water, LED_BLINK_TIME_OFF);
+        water->useLed()->Blink(LED_BLINK_TIME_ON_LONG, LED_BLINK_TIME_OFF).Repeat(tens).Update();
+        wait(water);
+        waitOff(water, LED_BLINK_TIME_OFF);
     }
-    water->useLed()->Blink(LED_BLINK_TIME_ON_LONG, LED_BLINK_TIME_OFF).Repeat(tens).Update();
-    wait(water);
 }
 
 void blinkUnits(Water *water, byte units)
@@ -37,19 +38,10 @@ void blinkUnits(Water *water, byte units)
     if (units > 0)
     {
         waitOff(water, LED_BLINK_TIME_OFF);
+        water->useLed()->Blink(LED_BLINK_TIME_ON_SHORT, LED_BLINK_TIME_OFF).Repeat(units).Update();
+        wait(water);
+        waitOff(water, LED_BLINK_TIME_OFF);
     }
-    water->useLed()->Blink(LED_BLINK_TIME_ON_SHORT, LED_BLINK_TIME_OFF).Repeat(units).Update();
-    wait(water);
-}
-
-void blinkWaterLength(Water *water)
-{
-    byte currentWaterLength = water->getWaterLength();
-    byte lengthUnit = currentWaterLength % 10;
-    byte lengthTens = currentWaterLength / 10;
-
-    blinkTens(water, lengthTens);
-    blinkUnits(water, lengthUnit);
 }
 
 void blinkRemainingTime(Water *water)
@@ -70,24 +62,6 @@ void blinkRemainingTime(Water *water)
     blinkUnits(water, remainingTimeUnit);
     waitOff(water, LED_BLINK_TIME_OFF);
     water->useLed()->On().Update();
-
-    Serial.println("Blink remaining time _________________________________");
-
-    Serial.print("Current time: ");
-    Serial.print(currentMinute);
-    Serial.print(":");
-    Serial.println(currentSecond);
-
-    Serial.print("Water start time: ");
-    Serial.print(waterStartMinute);
-    Serial.print(":");
-    Serial.println(waterStartSecond);
-
-    Serial.print("Water length: ");
-    Serial.println(waterLength);
-
-    Serial.print("Remaining minutes: ");
-    Serial.println(remainingMinutes);
 }
 
 void checkWateringTime(Water *water)
@@ -97,13 +71,6 @@ void checkWateringTime(Water *water)
     byte waterStartSecond = water->getWaterStartSecond();
     byte waterStartMinute = water->getWaterStartMinute();
     byte waterLength = water->getWaterLength();
-
-    // Serial.print("Current minute: ");
-    // Serial.println(currentMinute);
-    // Serial.print("Water start minute: ");
-    // Serial.println(waterStartMinute);
-    // Serial.print("Water length: ");
-    // Serial.println(waterLength);
 
     if (currentMinute * 60 + currentSecond - waterStartMinute * 60 - waterStartSecond >= waterLength * 60)
     {
@@ -115,3 +82,97 @@ void checkWateringTime(Water *water)
         Serial.println("Watering timer triggered");
     }
 }
+
+void blinkWaterLength(Water *water)
+{
+    byte currentWaterLength = water->getWaterLength();
+    byte lengthUnit = currentWaterLength % 10;
+    byte lengthTens = currentWaterLength / 10;
+
+    blinkTens(water, lengthTens);
+    blinkUnits(water, lengthUnit);
+}
+
+void blinkTemperatureThreshold(Water *water)
+{
+    byte temperatureThreshold = water->getTemperatureThreshold();
+    byte temperatureUnit = temperatureThreshold % 10;
+    byte temperatureTens = temperatureThreshold / 10;
+
+    blinkTens(water, temperatureTens);
+    blinkUnits(water, temperatureUnit);
+}
+
+void blinkAlarm(Water *water)
+{
+    byte alarmTime = water->getAlarmTime();
+
+    blinkUnits(water, alarmTime + 1);
+}
+
+bool isHot(Water *water)
+{
+    float currentTemperature = water->getCurrentTemperature();
+    byte temperatureThreshold = water->getTemperatureThreshold();
+
+    Serial.print("Current temperature: ");
+    Serial.println(currentTemperature);
+    Serial.print("Temperature threshold: ");
+    Serial.println(temperatureThreshold);
+
+    if (currentTemperature > temperatureThreshold)
+    {
+        Serial.println("Temperature threshold triggered");
+        return true;
+    }
+
+    return false;
+}
+
+void handleSetupAlarmInterrupt(Water *water)
+{
+    WaterState *previousState = water->getPreviousState();
+    if (previousState == &Idle::getInstance())
+    {
+        water->setState(Watering::getInstance());
+    }
+    else
+    {
+    }
+}
+
+// void playSetupMelody(Water *water)
+// {
+//     int melody[] = {
+//         NOTE_C5, NOTE_D5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_A5, NOTE_B5, NOTE_C6};
+
+//     int noteDurations[] = {
+//         16, 16, 16, 16, 16, 16, 16, 16};
+
+//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
+// }
+
+// void hiTone(Water *water)
+// {
+//     int melody[] = {
+//         NOTE_C5, NOTE_D5, NOTE_E5};
+
+//     int noteDurations[] = {
+//         16,
+//         16,
+//         16,
+//     };
+
+//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
+// }
+
+// void lowTone(Water *water)
+// {
+//     int melody[] = {
+//         NOTE_C4};
+
+//     int noteDurations[] = {
+//         8};
+
+//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
+// }
