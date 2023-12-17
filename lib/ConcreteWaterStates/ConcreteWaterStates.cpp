@@ -28,13 +28,13 @@ void Idle::buttonShortPress(Water *water)
     water->setState(Watering::getInstance());
 
     Serial.println("Button short press");
-    water->useBuzzer()->playWateringMelody();
+    water->useBuzzer()->playXmasMelody();
 }
 
 void Idle::buttonDoublePress(Water *water)
 {
     water->setState(RainDetected::getInstance());
-    water->useBuzzer()->beep(2);
+    water->useBuzzer()->playGodfatherMelody();
 }
 
 void Idle::buttonLongPress(Water *water)
