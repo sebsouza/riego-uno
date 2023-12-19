@@ -59,6 +59,8 @@ void blinkRemainingTime(Water *water)
     byte remainingTimeTens = remainingMinutes / 10;
 
     blinkTens(water, remainingTimeTens);
+    waitOff(water, LED_BLINK_TIME_OFF);
+
     blinkUnits(water, remainingTimeUnit);
     waitOff(water, LED_BLINK_TIME_OFF);
     water->useLed()->On().Update();
@@ -140,39 +142,3 @@ void handleSetupAlarmInterrupt(Water *water)
     {
     }
 }
-
-// void playSetupMelody(Water *water)
-// {
-//     int melody[] = {
-//         NOTE_C5, NOTE_D5, NOTE_E5, NOTE_F5, NOTE_G5, NOTE_A5, NOTE_B5, NOTE_C6};
-
-//     int noteDurations[] = {
-//         16, 16, 16, 16, 16, 16, 16, 16};
-
-//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
-// }
-
-// void hiTone(Water *water)
-// {
-//     int melody[] = {
-//         NOTE_C5, NOTE_D5, NOTE_E5};
-
-//     int noteDurations[] = {
-//         16,
-//         16,
-//         16,
-//     };
-
-//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
-// }
-
-// void lowTone(Water *water)
-// {
-//     int melody[] = {
-//         NOTE_C4};
-
-//     int noteDurations[] = {
-//         8};
-
-//     playMelody(melody, noteDurations, MELODY_LENGTH, water->useBuzzer()->getPin());
-// }

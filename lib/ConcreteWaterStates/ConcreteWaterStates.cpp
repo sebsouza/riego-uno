@@ -28,13 +28,13 @@ void Idle::buttonShortPress(Water *water)
     water->setState(Watering::getInstance());
 
     Serial.println("Button short press");
-    water->useBuzzer()->playXmasMelody();
+    water->useBuzzer()->playStarwarsMelody();
 }
 
 void Idle::buttonDoublePress(Water *water)
 {
     water->setState(RainDetected::getInstance());
-    water->useBuzzer()->playGodfatherMelody();
+    water->useBuzzer()->beepLo();
 }
 
 void Idle::buttonLongPress(Water *water)
@@ -95,10 +95,12 @@ void Watering::exit(Water *water)
 void Watering::buttonShortPress(Water *water)
 {
     water->setState(Idle::getInstance());
+    water->useBuzzer()->beep();
 }
 
 void Watering::buttonDoublePress(Water *water)
 {
+    water->useBuzzer()->playXmasMelody();
 }
 
 void Watering::buttonLongPress(Water *water)
@@ -142,6 +144,7 @@ void RainDetected::exit(Water *water)
 void RainDetected::buttonShortPress(Water *water)
 {
     water->setState(Idle::getInstance());
+    water->useBuzzer()->beep();
 }
 
 void RainDetected::buttonDoublePress(Water *water)
@@ -315,19 +318,18 @@ void AlarmSetup::execute(Water *water)
 
 void AlarmSetup::exit(Water *water)
 {
-    byte A1Day;
-    byte A1Hour;
-    byte A1Minute;
-    byte A1Second;
-    byte AlarmBits;
-    bool A1Dy;
-    bool A1h12;
-    bool A1PM;
+    byte day, hour, minute, second, alarmBits;
+    bool dayIsDay, h12, pm;
 
-    // Update alarm time
-    water->useRtc()->getA1Time(A1Day, A1Hour, A1Minute, A1Second, AlarmBits, A1Dy, A1h12, A1PM);
-    A1Hour = alarmTime[water->getAlarmTime()];
-    water->useRtc()->setA1Time(A1Day, A1Hour, A1Minute, A1Second, AlarmBits, A1Dy, A1h12, A1PM);
+    // Update alarm 1 time
+    water->useRtc()->getA1Time(day, hour, minute, second, alarmBits, dayIsDay, h12, pm);
+    hour = ALARM_HOURS[water->getAlarmTime()];
+    water->useRtc()->setA1Time(day, hour, minute, second, alarmBits, dayIsDay, h12, pm);
+
+    // Update alarm 2 time
+    water->useRtc()->getA2Time(day, hour, minute, alarmBits, dayIsDay, h12, pm);
+    hour = (ALARM_HOURS[water->getAlarmTime()] + 4) % 24;
+    water->useRtc()->setA2Time(day, hour, minute, alarmBits, dayIsDay, h12, pm);
 
     EEPROM.put(131, water->getAlarmTime());
     EEPROM.put(128, 'S');
