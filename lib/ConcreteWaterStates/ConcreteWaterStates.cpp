@@ -34,7 +34,7 @@ void Idle::buttonShortPress(Water *water)
 void Idle::buttonDoublePress(Water *water)
 {
     water->setState(RainDetected::getInstance());
-    water->useBuzzer()->beepLo();
+    water->useBuzzer()->playGodfatherMelody();
 }
 
 void Idle::buttonLongPress(Water *water)
@@ -205,7 +205,7 @@ void LengthSetup::buttonShortPress(Water *water)
 void LengthSetup::buttonDoublePress(Water *water)
 {
     water->setWaterLength(water->getWaterLength() - 1);
-    water->useBuzzer()->beep();
+    water->useBuzzer()->beepLo();
 }
 
 void LengthSetup::buttonLongPress(Water *water)
@@ -269,7 +269,7 @@ void TemperatureSetup::buttonShortPress(Water *water)
 void TemperatureSetup::buttonDoublePress(Water *water)
 {
     water->setTemperatureThreshold(water->getTemperatureThreshold() - 1);
-    water->useBuzzer()->beep();
+    water->useBuzzer()->beepLo();
 }
 
 void TemperatureSetup::buttonLongPress(Water *water)
@@ -347,7 +347,7 @@ void AlarmSetup::buttonShortPress(Water *water)
 void AlarmSetup::buttonDoublePress(Water *water)
 {
     water->setAlarmTime((water->getAlarmTime() - 1) % 4);
-    water->useBuzzer()->beep();
+    water->useBuzzer()->beepLo();
 }
 
 void AlarmSetup::buttonLongPress(Water *water)

@@ -18,7 +18,7 @@ void Buzzer::beep(byte times)
     for (byte i = 0; i < times; i++)
     {
         tone(pin, BEEP_NOTE, 100);
-        delay(200);
+        delay(150);
     }
 }
 

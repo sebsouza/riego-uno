@@ -15,10 +15,11 @@ public:
     void beep(byte times, unsigned int delayTime);
     void beep(byte times, unsigned int delayTime, unsigned int beepTime);
     void beepLo();
-    void longBeep() { beep(1, 100, 500); };
+    void longBeep() { beep(1, 0, 300); };
     void playMelody(int melody[], int noteDurations[], int noteCount, int tempo);
     void playXmasMelody();
     void playStarwarsMelody();
+    void playGodfatherMelody();
 
 private:
     byte pin;
