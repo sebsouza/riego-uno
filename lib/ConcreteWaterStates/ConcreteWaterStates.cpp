@@ -328,7 +328,7 @@ void AlarmSetup::exit(Water *water)
 
     // Update alarm 2 time
     water->useRtc()->getA2Time(day, hour, minute, alarmBits, dayIsDay, h12, pm);
-    hour = (ALARM_HOURS[water->getAlarmTime()] + 4) % 24;
+    hour = (ALARM_HOURS[water->getAlarmTime()] + 8) % 24;
     water->useRtc()->setA2Time(day, hour, minute, alarmBits, dayIsDay, h12, pm);
 
     EEPROM.put(131, water->getAlarmTime());
